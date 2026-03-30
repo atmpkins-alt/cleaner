@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1a">
+<title>Clean</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --surface: #242424;
+    --surface2: #2e2e2e;
+    --border: #383838;
+    --text: #f0ece4;
+    --text-dim: #8a8478;
+    --text-muted: #5a5650;
+    --accent: #c8b89a;
+    --accent-dim: #7a6e5e;
+    --green: #7db87a;
+    --green-dim: #3a5238;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ─── HOME SCREEN ─── */
+  #home {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top, 20px) 0 env(safe-area-inset-bottom, 20px);
+  }
+
+  .home-header {
+    padding: 28px 24px 20px;
+  }
+
+  .home-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .home-header .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 24px;
+    margin-bottom: 10px;
+    margin-top: 24px;
+  }
+
+  .list-cards {
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .list-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: background 0.15s, transform 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .list-card:active {
+    background: var(--surface2);
+    transform: scale(0.985);
+  }
+
+  .list-card.complete {
+    border-color: var(--green-dim);
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .list-card.complete .card-icon {
+    background: var(--green-dim);
+  }
+
+  .card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  .card-last-done {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .card-last-done.recent {
+    color: var(--green);
+  }
+
+  .card-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .progress-ring-wrap {
+    position: relative;
+    width: 36px;
+    height: 36px;
+  }
+
+  .progress-ring {
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 3;
+  }
+
+  .progress-ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.4s ease;
+  }
+
+  .list-card.complete .progress-ring-fill {
+    stroke: var(--green);
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  .chevron {
+    color: var(--text-muted);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ─── CHECKLIST SCREEN ─── */
+  #checklist {
+    display: none;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .cl-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: env(safe-area-inset-top, 16px) 20px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .cl-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 6px 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cl-title-row {
+    padding-bottom: 14px;
+  }
+
+  .cl-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    line-height: 1.1;
+  }
+
+  .cl-progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    margin: 0 -20px;
+    position: relative;
+  }
+
+  .cl-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .cl-progress-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    padding-bottom: 12px;
+    font-weight: 300;
+  }
+
+  .cl-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 120px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .section-header {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 20px 20px 8px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0 16px;
+    margin-bottom: 2px;
+  }
+
+  .task-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .task-inner:active {
+    background: var(--surface2);
+  }
+
+  .task-inner.checked {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .task-check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-top: 1px;
+    background: transparent;
+  }
+
+  .task-inner.checked .task-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .checkmark {
+    display: none;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .task-inner.checked .checkmark {
+    display: block;
+  }
+
+  .task-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-label {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.4;
+    transition: color 0.2s;
+  }
+
+  .task-inner.checked .task-label {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-muted);
+  }
+
+  .task-note-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--accent-dim);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+  }
+
+  .task-note {
+    display: none;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+    line-height: 1.55;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent-dim);
+  }
+
+  .task-note.open {
+    display: block;
+  }
+
+  /* ─── COMPLETION BANNER ─── */
+  .complete-banner {
+    display: none;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 0);
+    left: 0; right: 0;
+    background: var(--green-dim);
+    border-top: 1px solid var(--green);
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    animation: slideUp 0.3s ease;
+  }
+
+  .complete-banner.visible {
+    display: block;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .complete-banner p {
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  /* ─── RESET CONFIRM ─── */
+  .reset-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 30;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .reset-overlay.visible {
+    display: flex;
+  }
+
+  .reset-sheet {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    padding: 24px 20px 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .reset-sheet h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+
+  .reset-sheet p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .reset-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-confirm-reset {
+    background: #7a3030;
+    border: none;
+    color: #f0ece4;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .btn-cancel {
+    background: var(--surface2);
+    border: none;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+  }
+
+  /* Scrollbar hide */
+  .cl-body::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="home">
+  <div class="home-header">
+    <h1>Clean</h1>
+    <p class="subtitle">Tap a checklist to start a session</p>
+  </div>
+
+  <div class="section-label">Weekly</div>
+  <div class="list-cards" id="weekly-cards"></div>
+
+  <div class="section-label">Quarterly</div>
+  <div class="list-cards" id="quarterly-cards"></div>
+</div>
+
+<!-- ══════════════ CHECKLIST ══════════════ -->
+<div id="checklist">
+  <div class="cl-header">
+    <div class="cl-nav">
+      <button class="back-btn" onclick="goHome()">
+        <span>←</span> All Lists
+      </button>
+    </div>
+    <div class="cl-title-row">
+      <div class="cl-title" id="cl-title"></div>
+      <div class="cl-progress-label" id="cl-progress-label"></div>
+    </div>
+    <div class="cl-progress-bar-wrap">
+      <div class="cl-progress-bar" id="cl-progress-bar"></div>
+    </div>
+  </div>
+  <div class="cl-body" id="cl-body"></div>
+</div>
+
+<!-- Complete banner -->
+<div class="complete-banner" id="complete-banner">
+  <p>✓ All done!</p>
+  <button class="reset-btn" onclick="showResetSheet()">Reset checklist</button>
+</div>
+
+<!-- Reset confirm sheet -->
+<div class="reset-overlay" id="reset-overlay" onclick="hideResetSheet(event)">
+  <div class="reset-sheet">
+    <h3>Reset checklist?</h3>
+    <p>This will clear all checkmarks for this list. Your "last done" date will stay recorded.</p>
+    <div class="reset-actions">
+      <button class="btn-confirm-reset" onclick="confirmReset()">Yes, reset</button>
+      <button class="btn-cancel" onclick="hideResetSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════ DATA ══════════════
+
+const LISTS = [
+  {
+    id: 'bathroom',
+    title: 'Bathroom',
+    icon: '🚿',
+    tier: 'weekly',
+    tasks: [
+      { label: 'Put cleaner in toilet' },
+      { label: 'Clean counters and sinks' },
+      { label: 'Clean mirrors' },
+      { label: 'Dust and clean light fixtures' },
+      { label: 'Dust artwork' },
+      { label: 'Spray shower with foaming bubbles' },
+      { label: 'Clean inside and out of toilet and surrounding areas', note: 'Also clean inside of other toilet.' },
+      { label: 'Clean shower tile', note: 'Use the Hoto wand.' },
+      { label: 'Main bath — spray bathtub' },
+      { label: 'Main bath — clean shower doors', note: 'Use bubble spray on doors to get soap scum, then use Windex on the shower doors. Windex on outside too.' },
+      { label: 'Main bath — clean tub and any soot' },
+      { label: 'Clean towel racks' },
+      { label: 'Wipe down and disinfect cabinets if needed' },
+      { label: 'Wipe down walls for water streaks if needed', note: 'Can use vinegar/water solution.' },
+      { label: 'Mop the floor if needed' },
+      { label: 'Empty and wipe down trash can' },
+    ]
+  },
+  {
+    id: 'kitchen-light',
+    title: 'Kitchen — Light',
+    icon: '🍳',
+    tier: 'weekly',
+    tasks: [
+      { label: 'Clean appliance exteriors' },
+      { label: 'Clean countertops and backsplash', note: 'Remove all items first.' },
+      { label: 'Clean sink' },
+      { label: 'Dust books' },
+      { label: 'Clean cutting board and oil if needed' },
+      { label: 'Wipe down fridge front' },
+      { label: 'Replace towels as needed' },
+      { label: 'Clean small items (toaster, coffee maker, etc.)' },
+      { label: 'Clean microwave inside and outside' },
+      { label: 'Clean stove top and wipe down front', note: 'Wipe down knobs, clean grates if needed.' },
+      { label: 'Clean hood range' },
+      { label: 'Clean island' },
+      { label: 'Wipe down dishwasher and check interior filter' },
+      { label: 'Empty and wipe down trash can' },
+      { label: 'Wipe down wall next to trash can' },
+    ]
+  },
+  {
+    id: 'dusting',
+    title: 'Dusting & Wet Wipe',
+    icon: '🧹',
+    tier: 'weekly',
+    tasks: [
+      { section: 'General' },
+      { label: 'All doorknobs, furniture handles, and light switches' },
+      { label: 'Artwork tops', note: 'Use plush attachment.' },
+      { label: 'All bookshelves', note: 'Dust only.' },
+      { label: 'Lamps and light fixtures including bases', note: 'Dust only.' },
+      { label: 'Dust the plants', note: 'Use floofy attachment.' },
+      { label: 'Dust air filters and note any that need changing' },
+      { label: 'Furniture arms — wet wipe too' },
+      { section: 'Living Room, Dining Room & Hallway' },
+      { label: 'Wine cart items as needed + wine cart' },
+      { label: 'Hallway table' },
+      { label: 'Table behind couch' },
+      { label: 'Table by the fireplace' },
+      { label: 'White table by the couch' },
+      { label: 'Dining table' },
+      { label: 'Fireplace mantle', note: 'Remove all items first.' },
+      { label: 'Fireplace mantle items as needed' },
+      { label: 'Fireplace cover grooves' },
+      { label: 'Living room ledge', note: 'Sweep then spray clean or mop.' },
+      { section: 'Office' },
+      { label: 'Office fireplace' },
+      { label: 'Desk' },
+      { label: 'Two tables by the window' },
+      { section: 'Guest Bedroom' },
+      { label: 'Piano', note: 'Use flat attachment for under music stand.' },
+      { label: 'Coffee table in the guest bedroom' },
+      { label: 'Side tables' },
+      { label: 'Empty garbage' },
+      { label: 'TV stand in guest bedroom + TV' },
+      { label: 'Dust ladder' },
+      { section: 'Bedroom' },
+      { label: 'Bedroom dresser' },
+      { label: 'Bed' },
+      { label: 'Dust ladder' },
+      { label: 'Side table' },
+    ]
+  },
+  {
+    id: 'kitchen-deep',
+    title: 'Kitchen — Deep Clean',
+    icon: '🧽',
+    tier: 'quarterly',
+    tasks: [
+      { label: 'Wipe down cabinets' },
+      { label: 'Clean inside refrigerator', note: 'Clean shelves and drawers as needed.' },
+      { label: 'Descale coffee maker' },
+      { label: 'Clean inside oven' },
+      { label: 'Clean hood range filters' },
+      { label: 'Check dishwasher interior filter' },
+    ]
+  },
+  {
+    id: 'quarterly',
+    title: 'Quarterly Deep Clean',
+    icon: '✨',
+    tier: 'quarterly',
+    tasks: [
+      { label: 'Wash Ruggable rugs' },
+      { label: 'Remove cobwebs' },
+      { label: 'Dust and wet wipe baseboards', note: 'Use mop.' },
+      { label: 'Dust and wet wipe blinds', note: 'Turn so blind faces up, then "grab" each one to clean longer sections. Flip and clean back-and-forth for shorter sections near the frame. Also focus on tops and bottoms.' },
+      { label: 'Use magic eraser on scuffs on walls or baseboards' },
+      { label: 'Wet wipe doors and door frames', note: 'Don\'t miss the tops and grooves. Wet wipe the insulation insert on the front door.' },
+      { label: 'Dust window frames and wet wipe window sills' },
+      { label: 'Clean speakerphone in the hallway' },
+      { label: 'Clean all candleholders', note: 'Use water for glass ones.' },
+      { label: 'Vacuum under couch cushions / vacuum furniture if needed', note: 'Every 3 months or so.' },
+      { label: 'Vacuum or spot clean furniture if needed' },
+      { label: 'Windex mirrors not in bathrooms' },
+      { label: 'Clean each window interior', note: 'Use Windex and the mop.' },
+      { label: 'Clean exterior windows if needed', note: 'Clean ones you can reach — atrium for example.' },
+    ]
+  }
+];
+
+// ══════════════ STATE ══════════════
+
+let state = {}; // { listId: { checked: {taskIndex: bool}, lastDone: 'YYYY-MM-DD' } }
+let currentListId = null;
+
+// Safe storage wrapper — falls back to in-memory if localStorage is unavailable
+const store = (() => {
+  let mem = {};
+  let hasLS = false;
+  try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); hasLS = true; } catch(e) {}
+  return {
+    get(k) {
+      if (hasLS) { try { return localStorage.getItem(k); } catch(e) {} }
+      return mem[k] ?? null;
+    },
+    set(k, v) {
+      if (hasLS) { try { localStorage.setItem(k, v); return; } catch(e) {} }
+      mem[k] = v;
+    }
+  };
+})();
+
+function loadState() {
+  try {
+    state = JSON.parse(store.get('clean-app-v1') || '{}');
+  } catch(e) { state = {}; }
+}
+
+function saveState() {
+  try {
+    store.set('clean-app-v1', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function getListState(id) {
+  if (!state[id]) state[id] = { checked: {}, lastDone: null };
+  return state[id];
+}
+
+// ══════════════ HOME RENDER ══════════════
+
+function renderHome() {
+  ['weekly', 'quarterly'].forEach(tier => {
+    const container = document.getElementById(tier + '-cards');
+    container.innerHTML = '';
+    LISTS.filter(l => l.tier === tier).forEach(list => {
+      container.appendChild(makeCard(list));
+    });
+  });
+}
+
+function makeCard(list) {
+  const ls = getListState(list.id);
+  const tasks = list.tasks.filter(t => !t.section);
+  const total = tasks.length;
+  const done = Object.values(ls.checked).filter(Boolean).length;
+  const pct = total ? done / total : 0;
+  const complete = done === total && total > 0;
+
+  const card = document.createElement('div');
+  card.className = 'list-card' + (complete ? ' complete' : '');
+  card.onclick = () => openList(list.id);
+
+  // Progress ring
+  const r = 14, circ = 2 * Math.PI * r;
+  const offset = circ * (1 - pct);
+
+  const lastDoneStr = ls.lastDone
+    ? formatLastDone(ls.lastDone)
+    : 'Never run';
+
+  const recentClass = isRecent(ls.lastDone) ? 'recent' : '';
+
+  card.innerHTML = `
+    <div class="card-icon">${list.icon}</div>
+    <div class="card-info">
+      <div class="card-title">${list.title}</div>
+      <div class="card-meta">${total} tasks</div>
+      <div class="card-last-done ${recentClass}">${lastDoneStr}</div>
+    </div>
+    <div class="card-progress">
+      <div class="progress-ring-wrap">
+        <svg class="progress-ring" width="36" height="36" viewBox="0 0 36 36">
+          <circle class="progress-ring-bg" cx="18" cy="18" r="${r}"/>
+          <circle class="progress-ring-fill" cx="18" cy="18" r="${r}"
+            stroke-dasharray="${circ}"
+            stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="progress-text">${done}/${total}</div>
+      </div>
+    </div>
+    <div class="chevron">›</div>
+  `;
+  return card;
+}
+
+function formatLastDone(dateStr) {
+  if (!dateStr) return 'Never run';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
+  if (diffDays === 0) return 'Done today';
+  if (diffDays === 1) return 'Done yesterday';
+  if (diffDays < 7) return `Done ${diffDays} days ago`;
+  if (diffDays < 14) return 'Done last week';
+  if (diffDays < 30) return `Done ${Math.floor(diffDays/7)} weeks ago`;
+  if (diffDays < 60) return 'Done last month';
+  return `Done ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+}
+
+function isRecent(dateStr) {
+  if (!dateStr) return false;
+  const diffDays = Math.floor((new Date() - new Date(dateStr)) / 86400000);
+  return diffDays <= 7;
+}
+
+// ══════════════ CHECKLIST RENDER ══════════════
+
+function openList(id) {
+  currentListId = id;
+  const list = LISTS.find(l => l.id === id);
+  const ls = getListState(id);
+
+  document.getElementById('cl-title').textContent = list.title;
+  document.getElementById('home').style.display = 'none';
+  const cl = document.getElementById('checklist');
+  cl.style.display = 'flex';
+
+  renderChecklist(list, ls);
+  updateProgress(list, ls);
+  window.scrollTo(0,0);
+  cl.querySelector('.cl-body').scrollTo(0,0);
+}
+
+function renderChecklist(list, ls) {
+  const body = document.getElementById('cl-body');
+  body.innerHTML = '';
+
+  let taskIndex = 0;
+  list.tasks.forEach(task => {
+    if (task.section) {
+      const sh = document.createElement('div');
+      sh.className = 'section-header';
+      sh.textContent = task.section;
+      body.appendChild(sh);
+      return;
+    }
+
+    const idx = taskIndex++;
+    const checked = !!ls.checked[idx];
+
+    const item = document.createElement('div');
+    item.className = 'task-item';
+
+    const inner = document.createElement('div');
+    inner.className = 'task-inner' + (checked ? ' checked' : '');
+    inner.dataset.idx = idx;
+    inner.onclick = () => toggleTask(idx, inner, list, ls);
+
+    let noteHTML = '';
+    if (task.note) {
+      noteHTML = `
+        <div class="task-note-toggle" onclick="toggleNote(event, this)">
+          <span class="note-arrow">▸</span> Note
+        </div>
+        <div class="task-note">${task.note}</div>
+      `;
+    }
+
+    inner.innerHTML = `
+      <div class="task-check"><span class="checkmark">✓</span></div>
+      <div class="task-content">
+        <div class="task-label">${task.label}</div>
+        ${noteHTML}
+      </div>
+    `;
+
+    item.appendChild(inner);
+    body.appendChild(item);
+  });
+
+  updateCompleteBanner(list, ls);
+}
+
+function toggleTask(idx, inner, list, ls) {
+  ls.checked[idx] = !ls.checked[idx];
+  inner.classList.toggle('checked', ls.checked[idx]);
+
+  // If completing, record lastDone
+  const tasks = list.tasks.filter(t => !t.section);
+  const doneCount = Object.values(ls.checked).filter(Boolean).length;
+  if (doneCount === tasks.length) {
+    ls.lastDone = new Date().toISOString().split('T')[0];
+  }
+
+  saveState();
+  updateProgress(list, ls);
+  updateCompleteBanner(list, ls);
+}
+
+function toggleNote(e, el) {
+  e.stopPropagation();
+  const note = el.nextElementSibling;
+  const arrow = el.querySelector('.note-arrow');
+  note.classList.toggle('open');
+  arrow.textContent = note.classList.contains('open') ? '▾' : '▸';
+}
+
+function updateProgress(list, ls) {
+  const tasks = list.tasks.filter(t => !t.section);
+  const total = tasks.length;
+  const done = Object.values(ls.checked).filter(Boolean).length;
+  const pct = total ? (done / total) * 100 : 0;
+
+  document.getElementById('cl-progress-bar').style.width = pct + '%';
+  document.getElementById('cl-progress-label').textContent = `${done} of ${total} complete`;
+}
+
+function updateCompleteBanner(list, ls) {
+  const tasks = list.tasks.filter(t => !t.section);
+  const total = tasks.length;
+  const done = Object.values(ls.checked).filter(Boolean).length;
+  const banner = document.getElementById('complete-banner');
+  banner.classList.toggle('visible', done === total && total > 0);
+}
+
+// ══════════════ RESET ══════════════
+
+function showResetSheet() {
+  document.getElementById('reset-overlay').classList.add('visible');
+}
+
+function hideResetSheet(e) {
+  if (!e || e.target === document.getElementById('reset-overlay')) {
+    document.getElementById('reset-overlay').classList.remove('visible');
+  }
+}
+
+function confirmReset() {
+  if (!currentListId) return;
+  const ls = getListState(currentListId);
+  ls.checked = {};
+  saveState();
+  hideResetSheet();
+
+  const list = LISTS.find(l => l.id === currentListId);
+  renderChecklist(list, ls);
+  updateProgress(list, ls);
+}
+
+// ══════════════ NAVIGATION ══════════════
+
+function goHome() {
+  document.getElementById('checklist').style.display = 'none';
+  document.getElementById('home').style.display = 'flex';
+  document.getElementById('complete-banner').classList.remove('visible');
+  currentListId = null;
+  renderHome();
+}
+
+// ══════════════ INIT ══════════════
+
+loadState();
+renderHome();
+</script>
+</body>
+</html>
